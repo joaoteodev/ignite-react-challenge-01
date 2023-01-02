@@ -13,12 +13,45 @@ interface Task {
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [statusVerify, setStatusVerify] = useState('');
+  const [inputStatus, setInputStatus] = useState(false);
+  const [bounceStatus, setBounceStatus] = useState(false);
+
+  function bouceInput() {
+    setBounceStatus(true)
+
+    setTimeout(() => setBounceStatus(false), 1000)
+  }
+
+  function handleInputTask(taskName: string) {
+    setNewTaskTitle(taskName)
+    setStatusVerify("")
+  }
+
+  function handleBlurTask() {
+    if(!newTaskTitle.trim()) {
+      setInputStatus(true)
+      setStatusVerify("Please enter the task name")
+      bouceInput()
+
+    } else {
+      setInputStatus(false)
+      setStatusVerify("")
+    }
+  }
 
   function handleCreateNewTask() {
-    if(newTaskTitle.trim()) {
-      setTasks(prevState => [...tasks, {id: Math.round(Math.random() * 1000), title: newTaskTitle, isComplete: false}])
-      setNewTaskTitle('')
-    }
+      if (!newTaskTitle.trim()) {
+        setInputStatus(true)
+        setStatusVerify("Please enter the task name")
+        bouceInput()
+      } else {
+        setInputStatus(false)
+        setStatusVerify("")
+        setTasks(prevState => [...tasks, {id: Math.round(Math.random() * 1000), title: newTaskTitle, isComplete: false}])
+        setNewTaskTitle('')
+      }
+  
   }
 
   function handleToggleTaskCompletion(id: number) {
@@ -32,19 +65,22 @@ export function TaskList() {
   return (
     <section className="task-list container">
       <header>
-        <h2>Minhas tasks</h2>
+        <h2>My tasks</h2>
 
-        <div className="input-group">
+        <div className={`input-group ${inputStatus === true ? "input-error": ""}`}>
           <input 
             type="text" 
-            placeholder="Adicionar novo todo" 
-            onChange={(e) => setNewTaskTitle(e.target.value)}
+            placeholder="Add new task" 
+            onChange={(e) => handleInputTask(e.target.value)}
             onKeyDownCapture={e => e.key === 'Enter' && handleCreateNewTask()}
             value={newTaskTitle}
+            onBlur={handleBlurTask}
+            className={bounceStatus == true ? "bounce" : ""}
           />
           <button type="submit" data-testid="add-task-button" onClick={handleCreateNewTask}>
             <FiCheckSquare size={16} color="#fff"/>
           </button>
+        <p className="verify-status">{statusVerify}</p>
         </div>
       </header>
 
